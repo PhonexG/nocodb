@@ -33,11 +33,26 @@ async function processColumnToSwaggerField(
           ncMeta,
         );
         if (colOpt) {
-          // LTAR fields in insert/update accept array of objects with id property
-          field.type = 'array';
-          field.items = {
-            type: 'object',
-            properties: {
+          if (
+            [RelationTypes.HAS_MANY, RelationTypes.MANY_TO_MANY].includes(
+              colOpt.type as RelationTypes,
+            )
+          ) {
+            field.type = 'array';
+            field.items = {
+              type: 'object',
+              properties: {
+                id: {
+                  oneOf: [{ type: 'string' }, { type: 'number' }],
+                  description: 'Record identifier for linking',
+                },
+              },
+              required: ['id'],
+            };
+            field.virtual = false;
+          } else {
+            setAsAnyType(field);
+            field.properties = {
               id: {
                 oneOf: [{ type: 'string' }, { type: 'number' }],
                 description: 'Record identifier for linking',
@@ -143,6 +158,8 @@ async function processColumnToSwaggerField(
             field.format = lookupField.format;
             field.$ref = lookupField.$ref;
             field.items = lookupField.items;
+            field.anyOf = lookupField.anyOf;
+            field.nullable = lookupField.nullable;
           } else {
             // Array lookup (HAS_MANY or MANY_TO_MANY)
             field.type = 'array';
