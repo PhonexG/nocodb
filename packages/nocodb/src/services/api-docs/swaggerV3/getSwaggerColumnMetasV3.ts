@@ -51,7 +51,7 @@ async function processColumnToSwaggerField(
             };
             field.virtual = false;
           } else {
-            setAsAnyType(field);
+            field.type = ['object', 'null'];
             field.properties = {
               id: {
                 oneOf: [{ type: 'string' }, { type: 'number' }],
